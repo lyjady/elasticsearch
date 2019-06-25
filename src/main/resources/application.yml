@@ -11,7 +11,7 @@ spring:
     time-zone: GMT+8
   data:
     elasticsearch:
-      cluster-name: my-application
+      cluster-name: docker-cluster
       cluster-nodes: 192.168.233.128:9300
 mybatis:
   configuration:

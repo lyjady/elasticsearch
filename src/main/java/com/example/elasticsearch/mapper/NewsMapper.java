@@ -1,6 +1,10 @@
 package com.example.elasticsearch.mapper;
 
+import com.example.elasticsearch.domain.News;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * @author linyongjin
@@ -10,4 +14,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface NewsMapper {
 
     int queryCount();
+
+    @Select("select * from coc_event_top")
+    List<News> queryNews();
 }

@@ -11,7 +11,7 @@ import java.util.Date;
  * @author linyongjin
  * @date 2019/6/23 20:32
  */
-@Document(indexName = "news", shards = 1, replicas = 0)
+@Document(indexName = "news", type = "news", shards = 2, replicas = 0)
 public class News {
 
     @Id
