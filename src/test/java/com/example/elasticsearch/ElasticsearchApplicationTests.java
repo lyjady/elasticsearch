@@ -1,5 +1,6 @@
 package com.example.elasticsearch;
 
+import com.example.elasticsearch.domain.Item;
 import com.example.elasticsearch.domain.News;
 import com.example.elasticsearch.mapper.NewsMapper;
 import com.example.elasticsearch.repository.NewsRepository;
@@ -49,6 +50,17 @@ public class ElasticsearchApplicationTests {
         //创建索引
         boolean index = template.createIndex(News.class);
         template.putMapping(News.class);
+    }
+
+    @Test
+    public void createItemIndex() {
+        template.createIndex(Item.class);
+        template.putMapping(Item.class);
+    }
+
+    @Test
+    public void deleteIndex() {
+        template.deleteIndex(News.class);
     }
 
     //批量插入数据
@@ -152,7 +164,7 @@ public class ElasticsearchApplicationTests {
     public void pageNews() {
         //分页查询
         int pageSize = 10;
-        int pageNum = 1;
+        int pageNum = 0;
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         builder.withQuery(QueryBuilders.matchQuery("title", "影响日常生活"));
         builder.withPageable(PageRequest.of(pageNum, pageSize));
@@ -166,6 +178,18 @@ public class ElasticsearchApplicationTests {
         }
     }
 
+    /**
+     * News{id=104, title='虾溜外卖油烟直排小区严重影响楼上居民日常生活', eventTime=Sun Apr 07 00:00:00 CST 2019, position='鼓楼区西营里新村楼下虾溜外卖', analysisType='环保', level='三级', way='12345平台', origin='人工接收', areaId=2, conetents='null', attachUrl='(NULL)'}
+     * News{id=148908, title='环境严重污染，影响群众生活', eventTime=Sun Apr 07 00:00:00 CST 2019, position='义洲', analysisType='环保', level='三级', way='视频采集', origin='人工接收', areaId=6, conetents='null', attachUrl='(NULL)'}
+     * News{id=2047, title='占道经营油烟排放到小区里影响生活', eventTime=Tue Apr 09 00:00:00 CST 2019, position='前屿东路76号金辉东景', analysisType='民政(含社区)', level='三级', way='网格员', origin='人工接收', areaId=4, conetents='null', attachUrl='img/event/civiladministration/'}
+     * News{id=30870, title='粉尘严重影响周边居民生活', eventTime=Sun Apr 07 00:00:00 CST 2019, position='鼓山镇樟林村', analysisType='环保', level='二级', way='网格员', origin='人工接收', areaId=4, conetents='null', attachUrl='(NULL)'}
+     * News{id=29795, title='违规排气，晚间噪音严重影响居民生活', eventTime=Mon Apr 08 00:00:00 CST 2019, position='道山西路电影制片厂西侧店面', analysisType='环保', level='三级', way='12345平台', origin='人工接收', areaId=2, conetents='null', attachUrl='(NULL)'}
+     * News{id=2519, title='1号楼下面餐饮店油烟排放不达标，严重影响楼上居民生活', eventTime=Mon Apr 08 00:00:00 CST 2019, position='快安路西侧3号安居佳苑', analysisType='环保', level='三级', way='网络舆情', origin='人工接收', areaId=5, conetents='null', attachUrl='(NULL)'}
+     * News{id=71504, title='油烟污染楼上居民正常生活', eventTime=Sun Apr 07 00:00:00 CST 2019, position='福州市马尾区快安路50号', analysisType='环保', level='三级', way='12345平台', origin='人工接收', areaId=5, conetents='null', attachUrl='(NULL)'}
+     * News{id=123275, title='影响交通及行车安全', eventTime=Sun Apr 07 00:00:00 CST 2019, position='福州市晋安区新东线', analysisType='交通', level='三级', way='网络舆情', origin='自动感知', areaId=4, conetents='null', attachUrl='img/event/traffaic/'}
+     * News{id=71507, title='饭店油烟污染楼上居民正常生活', eventTime=Mon Apr 08 00:00:00 CST 2019, position='福州市马尾区快安路40', analysisType='环保', level='三级', way='12345平台', origin='人工接收', areaId=5, conetents='null', attachUrl='(NULL)'}
+     * News{id=148813, title='严重影响行车安全', eventTime=Mon Apr 08 00:00:00 CST 2019, position='福州市晋安区北三环路', analysisType='交通', level='三级', way='12345平台', origin='人工接收', areaId=6, conetents='null', attachUrl='img/event/traffaic/'}
+     */
     @Test
     public void sortNews() {
         //排序
