@@ -11,8 +11,8 @@ spring:
     time-zone: GMT+8
   data:
     elasticsearch:
-      cluster-name: elasticsearch-docker
-      cluster-nodes: 192.168.233.128:9300
+      cluster-name: docker-cluster
+      cluster-nodes: 192.168.0.110:9300
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
