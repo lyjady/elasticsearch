@@ -4,15 +4,19 @@ import com.example.elasticsearch.domain.Computer;
 import com.example.elasticsearch.domain.Hotel;
 import com.example.elasticsearch.repository.ComputerRepository;
 import com.example.elasticsearch.repository.HotelRepository;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.range.InternalGeoDistance;
 import org.elasticsearch.search.aggregations.bucket.range.InternalRange;
 import org.elasticsearch.search.aggregations.metrics.geobounds.InternalGeoBounds;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
@@ -20,8 +24,13 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.SearchResultMapper;
+import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
 import org.springframework.data.elasticsearch.core.aggregation.impl.AggregatedPageImpl;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -61,7 +70,7 @@ public class ElasticSearchTemplateTest3 {
     public void testMatchQuery() {
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         builder.withQuery(QueryBuilders.matchQuery("name", "MacBook"))
-               .withSort(SortBuilders.fieldSort("id").order(SortOrder.ASC));
+                .withSort(SortBuilders.fieldSort("id").order(SortOrder.ASC));
         Page<Computer> search = computerRepository.search(builder.build());
         for (Computer computer : search) {
             System.out.println(computer);
@@ -72,7 +81,7 @@ public class ElasticSearchTemplateTest3 {
     public void testMultiMatchQuery() {
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         builder.withQuery(QueryBuilders.multiMatchQuery("MacBook Samsung", "name", "tag"))
-               .withSort(SortBuilders.fieldSort("id").order(SortOrder.ASC));
+                .withSort(SortBuilders.fieldSort("id").order(SortOrder.ASC));
         Page<Computer> search = computerRepository.search(builder.build());
         printResult(search);
     }
@@ -81,7 +90,7 @@ public class ElasticSearchTemplateTest3 {
     public void testTermQuery() {
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         builder.withQuery(QueryBuilders.termQuery("tag", "Samsung"))
-               .withSort(SortBuilders.fieldSort("id").order(SortOrder.ASC));
+                .withSort(SortBuilders.fieldSort("id").order(SortOrder.ASC));
         Page<Computer> search = computerRepository.search(builder.build());
         printResult(search);
     }
@@ -90,10 +99,10 @@ public class ElasticSearchTemplateTest3 {
     public void testBoolSearch() {
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         builder.withQuery(QueryBuilders.boolQuery()
-                    .must(QueryBuilders.matchQuery("name", "MacBook"))
-                    .mustNot(QueryBuilders.termQuery("tag", "HuaWei"))
-                    .should(QueryBuilders.rangeQuery("price").gte(5000))
-               .filter(QueryBuilders.matchQuery("name", "Pro")));
+                .must(QueryBuilders.matchQuery("name", "MacBook"))
+                .mustNot(QueryBuilders.termQuery("tag", "HuaWei"))
+                .should(QueryBuilders.rangeQuery("price").gte(5000))
+                .filter(QueryBuilders.matchQuery("name", "Pro")));
         Page<Computer> search = computerRepository.search(builder.build());
         printResult(search);
     }
@@ -108,7 +117,7 @@ public class ElasticSearchTemplateTest3 {
     @Test
     public void testGeoBoundingBox() {
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
-        builder.withQuery(QueryBuilders.geoBoundingBoxQuery("position").setCorners(new GeoPoint(42.0,-72.0), new GeoPoint(40.0, -74.0)));
+        builder.withQuery(QueryBuilders.geoBoundingBoxQuery("position").setCorners(new GeoPoint(42.0, -72.0), new GeoPoint(40.0, -74.0)));
         Page<Hotel> search = hotelRepository.search(builder.build());
         printResult(search);
     }
@@ -128,7 +137,7 @@ public class ElasticSearchTemplateTest3 {
         points.add(new GeoPoint(40.73, -74.1));
         points.add(new GeoPoint(40.01, -71.12));
         points.add(new GeoPoint(50.56, -90.58));
-        builder.withQuery(QueryBuilders.geoPolygonQuery("position",points));
+        builder.withQuery(QueryBuilders.geoPolygonQuery("position", points));
         Page<Hotel> search = hotelRepository.search(builder.build());
         printResult(search);
     }
@@ -145,13 +154,13 @@ public class ElasticSearchTemplateTest3 {
     public void testAggGeoDistance() {
         NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
         builder.withQuery(QueryBuilders.matchAllQuery())
-               .addAggregation(AggregationBuilders.geoDistance("group_by_position", new GeoPoint(40.0, -70.0))
-                       .unit(DistanceUnit.KILOMETERS)
-                       .distanceType(GeoDistance.PLANE)
-                       .addRange(0.0, 100.0)
-                       .addRange(101.0, 200.0)
-                       .addRange(201.0, 300)
-                       .field("position"));
+                .addAggregation(AggregationBuilders.geoDistance("group_by_position", new GeoPoint(40.0, -70.0))
+                        .unit(DistanceUnit.KILOMETERS)
+                        .distanceType(GeoDistance.PLANE)
+                        .addRange(0.0, 100.0)
+                        .addRange(101.0, 200.0)
+                        .addRange(201.0, 300)
+                        .field("position"));
         AggregatedPageImpl<Hotel> search = (AggregatedPageImpl<Hotel>) hotelRepository.search(builder.build());
         InternalRange result = (InternalRange) search.getAggregation("group_by_position");
         List<InternalRange.Bucket> buckets = result.getBuckets();
@@ -160,6 +169,38 @@ public class ElasticSearchTemplateTest3 {
             long docCount = bucket.getDocCount();
             System.out.println(key + ": " + docCount);
 
+        }
+    }
+
+    @Test
+    public void testHighLight() {
+        NativeSearchQueryBuilder builder = new NativeSearchQueryBuilder();
+        HighlightBuilder highlight = new HighlightBuilder();
+        highlight.field("name").preTags("<span style='color: red'>").postTags("</span>");
+        builder.withHighlightBuilder(highlight)
+                .withHighlightFields(new HighlightBuilder.Field("name"))
+                .withQuery(QueryBuilders.matchQuery("name", "MacBook"));
+        NativeSearchQuery build = builder.build();
+        Page<Computer> computers = template.queryForPage(build, Computer.class, new SearchResultMapper() {
+            @Override
+            public <T> AggregatedPage<T> mapResults(SearchResponse searchResponse, Class<T> aClass, Pageable pageable) {
+                List<Computer> computers = new ArrayList<>();
+                SearchHits searchHits = searchResponse.getHits();
+                for (SearchHit hit : searchHits) {
+                    Computer computer = new Computer();
+                    String name = hit.getHighlightFields().get("name").fragments()[0].toString();
+                    computer.setId(Long.parseLong(hit.getId()));
+                    computer.setName(name);
+                    computer.setTag((String) hit.getSourceAsMap().get("tag"));
+                    computer.setPrice((Double) hit.getSourceAsMap().get("price"));
+                    computers.add(computer);
+                }
+                return new AggregatedPageImpl<T>((List<T>) computers);
+            }
+        });
+        List<Computer> content = computers.getContent();
+        for (Computer computer : content) {
+            System.out.println(computer);
         }
     }
 }
