@@ -6,38 +6,35 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.GeoPointField;
-import org.springframework.stereotype.Indexed;
 
 /**
  * @author LinYongJin
- * @date 2019/8/29 19:55
+ * @date 2019/9/1 13:19
  */
-@Document(indexName = "computer", type = "computer", shards = 1, replicas = 0)
-public class Computer {
+@Document(indexName = "hotel", type = "hotel", shards = 1, replicas = 0)
+public class Hotel {
 
     @Id
     private Long id;
 
-    @Field(type = FieldType.Text, store = true, analyzer = "ik_max_word", searchAnalyzer = "ik_max_word", fielddata = true)
+    @Field(type = FieldType.Text, store = true, analyzer = "ik_max_word", fielddata = true, searchAnalyzer = "ik_max_word")
     private String name;
 
-    @Field(type = FieldType.Double, store = true)
-    private Double price;
-
-    @Field(type = FieldType.Keyword, store = true)
-    private String tag;
+    @Field(type = FieldType.Text, store = true, analyzer = "ik_max_word", fielddata = true, searchAnalyzer = "ik_max_word")
+    private String description;
 
     @GeoPointField
     private GeoPoint position;
 
-    public Computer() {
+    public Hotel() {
+
     }
 
-    public Computer(Long id, String name, Double price, String tag) {
+    public Hotel(Long id, String name, String description, GeoPoint position) {
         this.id = id;
         this.name = name;
-        this.price = price;
-        this.tag = tag;
+        this.description = description;
+        this.position = position;
     }
 
     public Long getId() {
@@ -56,20 +53,12 @@ public class Computer {
         this.name = name;
     }
 
-    public Double getPrice() {
-        return price;
+    public String getDescription() {
+        return description;
     }
 
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public GeoPoint getPosition() {
@@ -82,11 +71,10 @@ public class Computer {
 
     @Override
     public String toString() {
-        return "Computer{" +
+        return "Hotel{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", price=" + price +
-                ", tag='" + tag + '\'' +
+                ", description='" + description + '\'' +
                 ", position=" + position +
                 '}';
     }
